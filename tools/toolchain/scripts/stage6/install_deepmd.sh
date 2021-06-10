@@ -19,6 +19,7 @@ source "${INSTALLDIR}"/toolchain.env
 
 DEEPMD_LDFLAGS=''
 DEEPMD_LIBS=''
+DEEPMD_CXXFLAGS='-std=gnu++11 '
 
 ! [ -d "${BUILDDIR}" ] && mkdir -p "${BUILDDIR}"
 cd "${BUILDDIR}"
@@ -34,9 +35,14 @@ case "$with_deepmd" in
     echo "==================== Finding DeePMD from system paths ===================="
     check_lib -ldeepmd "DEEPMD"
     add_lib_from_paths DEEPMD_LDFLAGS "libdeepmd*" $LIB_PATHS
+    add_include_from_paths DEEPMD_CFLAGS "deepmd" $INCLUDE_PATHS
+    add_include_from_paths DEEPMD_CXXFLAGS "deepmd" $INCLUDE_PATHS
     check_lib -ltensorflow_cc "DEEPMD"
     check_lib -ltensorflow_framework "DEEPMD"
     add_lib_from_paths DEEPMD_LDFLAGS "libtensorflow*" $LIB_PATHS
+    DEEPMD_DFLAGS="-D__DEEPMD -DHIGH_PREC"
+    add_include_from_paths -p DEEPMD_CFLAGS "tensorflow" $INCLUDE_PATHS
+    add_include_from_paths -p DEEPMD_CXXFLAGS "tensorflow" $INCLUDE_PATHS
     ;;
   __DONTUSE__) ;;
 
@@ -76,8 +82,9 @@ esac
 if [ "$with_deepmd" != "__DONTUSE__" ]; then
   if [ "$DEEPMD_MODE" == "cpu"]; then
     DEEPMD_LIBS='-ldeepmd_op -ldeepmd -ldeepmd_cc -ltensorflow_cc -ltensorflow_framework -lstdc++'
-  elif [[ "$DEEPMD_MODE" == "cuda" ]]; then
+  elif [ "$DEEPMD_MODE" == "cuda" ]; then
     DEEPMD_LIBS='-ldeepmd_op -ldeepmd -ldeepmd_cc -ldeepmd_op_cuda -ltensorflow_cc -ltensorflow_framework -lstdc++'
+  fi
   if [ "$with_deepmd" != "__SYSTEM__" ]; then
     cat << EOF > "${BUILDDIR}/setup_deepmd"
 prepend_path LD_LIBRARY_PATH "$pkg_install_dir/lib"

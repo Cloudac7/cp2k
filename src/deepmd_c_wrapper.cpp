@@ -10,6 +10,7 @@
  * \author Yongbin Zhuang and Yunpei Liu
  ******************************************************************************/
 
+#ifdef _DEEPMD
 #include <iostream>
 #include "DeepPot.h"
 #include "c_wrapper.h"
@@ -85,3 +86,4 @@ void compute_nnp(nnp *n,
 	}
 //	cout << "this means vector function wrap successfully" << endl;
 }
+#endif

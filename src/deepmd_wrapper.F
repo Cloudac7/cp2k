@@ -9,6 +9,7 @@
 !> \brief Interface to the DeePMD-kit or a c++ wrapper.
 !> \par History
 !>      07.2019 created [Yongbin Zhuang]
+!>      06.2021 refactored [Yunpei Liu]
 !> \author Yongbin Zhuang
 ! **************************************************************************************************
 
@@ -28,6 +29,7 @@ MODULE deepmd_wrapper
    PRIVATE
    PUBLIC :: nnp, create_nnp, delete_nnp_c, compute_nnp
 
+#if(__DEEPMD)
    INTERFACE
       FUNCTION create_nnp_c(model) BIND(C, name="create_nnp")
          USE ISO_C_BINDING
@@ -57,6 +59,8 @@ MODULE deepmd_wrapper
          TYPE(C_PTR), INTENT(IN), VALUE :: dbox
       END SUBROUTINE
    END INTERFACE
+#endif
+
      TYPE nnp
              TYPE(C_PTR) :: ptr
      END TYPE
@@ -79,7 +83,9 @@ CONTAINS
                 c_model(i) = model(i:i)
              END DO
              c_model(N+1) = C_NULL_CHAR
+#if(__DEEPMD)
              create_nnp%ptr = create_nnp_c(c_model)
+#endif
    END FUNCTION
 
 ! **************************************************************************************************
@@ -99,9 +105,11 @@ CONTAINS
       REAL(C_DOUBLE), POINTER :: dcoord(:)
       INTEGER(C_INT), POINTER :: datype(:)
       REAL(C_DOUBLE), POINTER :: dbox(:)
+#if(__DEEPMD)
       CALL compute_nnp_c(pot, C_LOC(vecsize), C_LOC(dener), C_LOC(dforce(1)), &
                                C_LOC(dvirial(1)), C_LOC(datom_ener(1)), C_LOC(datom_virial(1)),&
                                C_LOC(dcoord(1)), C_LOC(datype(1)), C_LOC(dbox(1)))
+#endif
 !             print*, "this is energy"
 !             print*, dener
 !             print*, "this is force"
